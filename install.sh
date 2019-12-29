@@ -6,9 +6,17 @@
 # <udf name="bitwrk_branch" label="Choose the branch of BitWrk to run"
 #      oneOf="master,experimental" default="master">
 # <udf name="bitwrk_privkey" label="Set the desired Bitwrk private key in WIF format or leave empty to generate a new identity." default="">
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 BLENDER_VERSION=${BLENDER_VERSION-v2.79}
 BLENDER_SITE=${BLENDER_SITE-http://ftp.halifax.rwth-aachen.de/blender}
 BITWRK_BRANCH=${BITWRK_BRANCH-master}
+PRICE=${PRICE=uBTC1}
+
+
+echo "Installing BitWrk from branch $BITWRK_BRANCH using Blender $BLENDER_VERSION"
+echo "Blender download site is $BLENDER_SITE"
+
 if [[ -f ~bitwrk/.bitwrk-client/privatekey.wif ]]; then
   old_bitwrk_privkey=$(cat ~bitwrk/.bitwrk-client/privatekey.wif)
 fi
@@ -22,6 +30,10 @@ die() {
 export DEBIAN_FRONTEND=noninteractive
 apt-get update && apt-get -y install blender git mercurial curl atop sysbench bzip2 python3 psmisc
 #echo "deb http://ftp.us.debian.org/debian jessie main" >> /etc/apt/sources.list
+
+echo "Creating user bitwrk"
+useradd -m -s "/bin/bash" bitwrk
+
 echo "Disabling IPv6"
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 echo "net.ipv6.conf.all.disable_ipv6 = 1" > /etc/sysctl.d/01-disable-ipv6.conf
@@ -97,7 +109,11 @@ wget -c https://dl.google.com/go/go1.12.9.linux-amd64.tar.gz
 #tar xzf go1.8.linux-amd64.tar.gz
 #tar xzf go1.9.2.linux-amd64.tar.gz
 tar xzf go1.12.9.linux-amd64.tar.gz
-useradd -m -s "/bin/bash" bitwrk
+
+echo "Generating update.sh"
+sed "s|__BITWRK_BRANCH__|$BITWRK_BRANCH|g; s|__ARTICLE_PREFIX__|$articleprefix|g; s|__PRICE__|$PRICE|g" \
+ > ~bitwrk/update.sh < "$DIR/update.template.sh"
+
 mkdir /var/log/bitwrk
 chown bitwrk /var/log/bitwrk
 cd ~bitwrk
@@ -108,59 +124,8 @@ if [[ -n "$BITWRK_PRIVKEY" ]]; then
   chown bitwrk:bitwrk .bitwrk-client/privatekey.wif
   chmod 600 .bitwrk-client/privatekey.wif
 fi
-sed "s|__BITWRK_BRANCH__|$BITWRK_BRANCH|g; s|__ARTICLE_PREFIX__|$articleprefix|g" \
- > update.sh <<'EOF'
-#!/bin/bash
-set -e
-set -x
-articleprefix=__ARTICLE_PREFIX__
-die() {
-  echo "ERROR" $@
-  exit 1
-}
-cd $HOME || die "Homedir not found"
-if [ ! -d bitwrk ]; then
-  git clone --recursive https://github.com/indyjo/bitwrk.git || die "Cloning failed"
-fi
-if [[ -n "__BITWRK_BRANCH__" ]]; then
-  (cd bitwrk && git checkout "__BITWRK_BRANCH__") || die "Checkout of branch failed"
-fi
-cd bitwrk
-git pull || die "Failed to git pull"
-git submodule init && git submodule update || die "Failed to update submodules"
-killall bitwrk-client || true
-killall python3.5 || true
-go=/opt/go/bin/go
-export GOROOT=/opt/go
-$go clean ./client || die "Failed to execute go clean"
-($go build -o ./bitwrk-client ./client/cmd/bitwrk-client) || die "Failed to execute go build"
-(nohup ./bitwrk-client -extport 8082 > /var/log/bitwrk/daemon.log 2>&1 &) || die "Failed to launch bitwrk daemon"
-sleep 2
-serve_blender() {
-  id=$1
-  cost=$2
-  python3.5 blender-slave.py --blender /opt/blender/blender --max-cost $cost >/var/log/bitwrk/blender-$cost-$id.log 2>&1 &
-}
-grant_mandate() {
-  articleid=$1
-  price=$2
-  curl -F action=permit -F type=SELL -F articleid="$articleid" -F price=$price \
-     -F usetradesleft=on -F tradesleft=100000 -F validminutes=10 \
-     http://localhost:8081/
-}
-cd bitwrk-blender/render_bitwrk
-serve_blender 1 512M
-serve_blender 2 512M
-#serve_blender 3 2G
-#serve_blender 4 2G
-#serve_blender 5 8G
-#serve_blender 6 8G
-#serve_blender 7 32G
-grant_mandate $articleprefix/512M uBTC0
-grant_mandate $articleprefix/2G   uBTC26
-grant_mandate $articleprefix/8G   uBTC99
-grant_mandate $articleprefix/32G  uBTC444
-EOF
+
 chmod +x update.sh
 su -c "./update.sh" bitwrk
 sleep 30
+
