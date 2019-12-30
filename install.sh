@@ -11,8 +11,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BLENDER_VERSION=${BLENDER_VERSION-v2.79}
 BLENDER_SITE=${BLENDER_SITE-http://ftp.halifax.rwth-aachen.de/blender}
 BITWRK_BRANCH=${BITWRK_BRANCH-master}
-PRICE=${PRICE=uBTC1}
-
+PRICE=${PRICE-uBTC1}
+WORKS_FOR=${WORKS_FOR=1BossYjJLFFXJ4atnQDQR4VLVPJntcqmqN}
+EXECUTE=${EXECUTE-y}
+KEY_FILE=${KEY_FILE-}
 
 echo "Installing BitWrk from branch $BITWRK_BRANCH using Blender $BLENDER_VERSION"
 echo "Blender download site is $BLENDER_SITE"
@@ -111,8 +113,13 @@ wget -c https://dl.google.com/go/go1.12.9.linux-amd64.tar.gz
 tar xzf go1.12.9.linux-amd64.tar.gz
 
 echo "Generating update.sh"
-sed "s|__BITWRK_BRANCH__|$BITWRK_BRANCH|g; s|__ARTICLE_PREFIX__|$articleprefix|g; s|__PRICE__|$PRICE|g" \
- > ~bitwrk/update.sh < "$DIR/update.template.sh"
+sed "
+s|__BITWRK_BRANCH__|$BITWRK_BRANCH|g
+s|__ARTICLE_PREFIX__|$articleprefix|g
+s|__PRICE__|$PRICE|g
+s|__WORKS_FOR__|$WORKS_FOR|g
+s|__KEY_FILE__|$KEY_FILE|g
+" > ~bitwrk/update.sh < "$DIR/update.template.sh"
 
 mkdir /var/log/bitwrk
 chown bitwrk /var/log/bitwrk
@@ -126,6 +133,6 @@ if [[ -n "$BITWRK_PRIVKEY" ]]; then
 fi
 
 chmod +x update.sh
-su -c "./update.sh" bitwrk
-sleep 30
+
+[[ "$EXECUTE" = "y" ]] && su -c "./update.sh" bitwrk
 

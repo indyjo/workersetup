@@ -5,6 +5,8 @@ articleprefix="__ARTICLE_PREFIX__"
 articlesuffix="512M"
 price="__PRICE__"
 bitwrk_branch="__BITWRK_BRANCH__"
+works_for="__WORKS_FOR__"
+key_file="__KEY_FILE__"
 
 die() {
   echo "ERROR" $@
@@ -26,6 +28,20 @@ go=/opt/go/bin/go
 export GOROOT=/opt/go
 $go clean ./client || die "Failed to execute go clean"
 ($go build -o ./bitwrk-client ./client/cmd/bitwrk-client) || die "Failed to execute go build"
+($go build -o ./bitwrk-admin ./client/cmd/bitwrk-admin) || die "Failed to execute go build"
+
+accountid=$(./bitwrk-admin info 2>&1 | grep Identity| sed 's/.*Identity: \(.*\)$/\1/g')
+echo "My account ID: $accountid"
+
+if [[ ! -z "$works_for" ]]; then
+  ./bitwrk-admin relation worksfor "$works_for" true || die "Failed to establish worksfor relation"
+fi
+
+if [[ ! -z "$key_file" ]]; then
+  ./bitwrk-admin -identity "$key_file" relation trusts "$accountid" true || die "Failed to add account to trusts group"
+  rm "$key_file" || die "Failed to remove key file $key_file"
+fi
+
 (nohup ./bitwrk-client -extport 8082 > /var/log/bitwrk/daemon.log 2>&1 &) || die "Failed to launch bitwrk daemon"
 sleep 2
 serve_blender() {
