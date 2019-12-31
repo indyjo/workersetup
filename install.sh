@@ -35,6 +35,9 @@ apt-get update && apt-get -y install blender git mercurial curl atop sysbench bz
 
 echo "Creating user bitwrk"
 useradd -m -s "/bin/bash" bitwrk
+crontab -u bitwrk - <<'EOF'
+@reboot /home/bitwrk/update.sh >> /home/bitwrk/update.log 2>&1
+EOF
 
 echo "Disabling IPv6"
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
