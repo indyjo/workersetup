@@ -56,7 +56,11 @@ serve_blender() {
 grant_mandate() {
   local articleid=$1
   local price=$2
-  curl -F action=permit -F type=SELL -F articleid="$articleid" -F price="$price" \
+  local trusted='~trusted'
+  if [[ -z "$key_file" ]]; then
+    trusted=
+  fi
+  curl -F action=permit -F type=SELL -F articleid="$articleid$trusted" -F price="$price" \
      -F usetradesleft=on -F tradesleft=100000 -F validminutes=10 \
      http://localhost:8081/
 }
