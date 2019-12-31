@@ -37,7 +37,7 @@ if [[ ! -z "$works_for" ]]; then
   ./bitwrk-admin relation worksfor "$works_for" true || die "Failed to establish worksfor relation"
 fi
 
-if [[ ! -z "$key_file" ]]; then
+if [[ ! -z "$key_file" && -e "$key_file" ]]; then
   ./bitwrk-admin -identity "$key_file" relation trusts "$accountid" true || die "Failed to add account to trusts group"
   rm -f "$key_file" || die "Failed to remove key file $key_file"
 fi
@@ -45,13 +45,17 @@ fi
 (nohup ./bitwrk-client -extport 8082 > /var/log/bitwrk/daemon.log 2>&1 &) || die "Failed to launch bitwrk daemon"
 sleep 2
 serve_blender() {
-  id=$1
-  cost=$2
-  python3.5 blender-slave.py --blender /opt/blender/blender --max-cost $cost >/var/log/bitwrk/blender-$cost-$id.log 2>&1 &
+  local id=$1
+  local cost=$2
+  local trusted=--trusted
+  if [[ -z "$key_file" ]]; then
+    trusted=
+  fi
+  python3.5 blender-slave.py --blender /opt/blender/blender --max-cost $cost $trusted >/var/log/bitwrk/blender-$cost-$id.log 2>&1 &
 }
 grant_mandate() {
-  articleid=$1
-  price=$2
+  local articleid=$1
+  local price=$2
   curl -F action=permit -F type=SELL -F articleid="$articleid" -F price="$price" \
      -F usetradesleft=on -F tradesleft=100000 -F validminutes=10 \
      http://localhost:8081/
