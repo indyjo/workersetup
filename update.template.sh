@@ -13,6 +13,9 @@ die() {
   exit 1
 }
 cd $HOME || die "Homedir not found"
+
+(for i in {1..20}; do ping -q -c 1 -w 1 bitwrk.appspot.com && break; sleep 1; false; done) || die "Offline"
+
 if [ ! -d bitwrk ]; then
   git clone --recursive https://github.com/indyjo/bitwrk.git || die "Cloning failed"
 fi
