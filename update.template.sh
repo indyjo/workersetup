@@ -7,6 +7,7 @@ price="__PRICE__"
 bitwrk_branch="__BITWRK_BRANCH__"
 works_for="__WORKS_FOR__"
 key_file="__KEY_FILE__"
+init_only="$1"
 
 die() {
   echo "ERROR" $@
@@ -14,7 +15,7 @@ die() {
 }
 cd $HOME || die "Homedir not found"
 
-(for i in {1..120}; do ping -q -c 1 -w 1 bitwrk.appspot.com && break; sleep 1; false; done) || die "Offline"
+(for i in {1..300}; do ping -q -c 1 -w 1 bitwrk.appspot.com && break; sleep 1; false; done) || die "Offline"
 
 if [ ! -d bitwrk ]; then
   git clone --recursive https://github.com/indyjo/bitwrk.git || die "Cloning failed"
@@ -32,6 +33,11 @@ export GOROOT=/opt/go
 $go clean ./client || die "Failed to execute go clean"
 ($go build -o ./bitwrk-client ./client/cmd/bitwrk-client) || die "Failed to execute go build"
 ($go build -o ./bitwrk-admin ./client/cmd/bitwrk-admin) || die "Failed to execute go build"
+
+if [[ ! -z "$init_only" ]]; then
+  echo "Initialization finished."
+  exit
+fi
 
 accountid=$(./bitwrk-admin info 2>&1 | grep Identity| sed 's/.*Identity: \(.*\)$/\1/g')
 echo "My account ID: $accountid"

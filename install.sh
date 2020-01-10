@@ -136,6 +136,6 @@ if [[ -n "$BITWRK_PRIVKEY" ]]; then
 fi
 
 chmod +x update.sh
-
+su -c "./update.sh init-only" bitwrk || die "Initialization has exited with status code $?"
 [[ "$EXECUTE" = "y" ]] && su -c "./update.sh" bitwrk
 
