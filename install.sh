@@ -95,7 +95,7 @@ elif [[ "$BLENDER_VERSION" = "v2.79" ]]; then
   ln -s blender-2.79-linux-glibc219-x86_64/ blender
   articleprefix="net.bitwrk/blender/0/2.79"
 elif [[ "$BLENDER_VERSION" = "v2.81a" ]]; then
-  wget -c https://www.blender.org/download/Blender2.81/blender-2.81a-linux-glibc217-x86_64.tar.bz2
+  wget -c $BLENDER_SITE/release/Blender2.81/blender-2.81a-linux-glibc217-x86_64.tar.bz2
   tar xjf blender-2.81a-linux-glibc217-x86_64.tar.bz2
   ln -s blender-2.81a-linux-glibc217-x86_64/ blender
   articleprefix="net.bitwrk/blender/0/2.81"
