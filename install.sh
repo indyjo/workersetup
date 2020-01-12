@@ -8,12 +8,12 @@
 # <udf name="bitwrk_privkey" label="Set the desired Bitwrk private key in WIF format or leave empty to generate a new identity." default="">
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-BLENDER_VERSION=${BLENDER_VERSION-v2.79}
+BLENDER_VERSION=${BLENDER_VERSION-v2.81a}
 BLENDER_SITE=${BLENDER_SITE-http://ftp.halifax.rwth-aachen.de/blender}
 BITWRK_BRANCH=${BITWRK_BRANCH-master}
-PRICE=${PRICE-uBTC1}
-WORKS_FOR=${WORKS_FOR=1BossYjJLFFXJ4atnQDQR4VLVPJntcqmqN}
-EXECUTE=${EXECUTE-y}
+PRICE=${PRICE-uBTC0.0}
+WORKS_FOR=${WORKS_FOR-1BossYjJLFFXJ4atnQDQR4VLVPJntcqmqN}
+EXECUTE=${EXECUTE-n}
 KEY_FILE=${KEY_FILE-}
 
 echo "Installing BitWrk from branch $BITWRK_BRANCH using Blender $BLENDER_VERSION"
@@ -94,6 +94,11 @@ elif [[ "$BLENDER_VERSION" = "v2.79" ]]; then
   tar xjf blender-2.79-linux-glibc219-x86_64.tar.bz2
   ln -s blender-2.79-linux-glibc219-x86_64/ blender
   articleprefix="net.bitwrk/blender/0/2.79"
+elif [[ "$BLENDER_VERSION" = "v2.81a" ]]; then
+  wget -c https://www.blender.org/download/Blender2.81/blender-2.81a-linux-glibc217-x86_64.tar.bz2
+  tar xjf blender-2.81a-linux-glibc217-x86_64.tar.bz2
+  ln -s blender-2.81a-linux-glibc217-x86_64/ blender
+  articleprefix="net.bitwrk/blender/0/2.81"
 else
   die "Unknown blender version $BLENDER_VERSION"
 fi
