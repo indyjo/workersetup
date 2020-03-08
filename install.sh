@@ -8,7 +8,7 @@
 # <udf name="bitwrk_privkey" label="Set the desired Bitwrk private key in WIF format or leave empty to generate a new identity." default="">
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-BLENDER_VERSION=${BLENDER_VERSION-v2.81a}
+BLENDER_VERSION=${BLENDER_VERSION-v2.82}
 BLENDER_SITE=${BLENDER_SITE-http://ftp.halifax.rwth-aachen.de/blender}
 BITWRK_BRANCH=${BITWRK_BRANCH-master}
 PRICE=${PRICE-uBTC0.0}
@@ -99,6 +99,11 @@ elif [[ "$BLENDER_VERSION" = "v2.81a" ]]; then
   tar xjf blender-2.81a-linux-glibc217-x86_64.tar.bz2
   ln -s blender-2.81a-linux-glibc217-x86_64/ blender
   articleprefix="net.bitwrk/blender/0/2.81"
+elif [[ "$BLENDER_VERSION" = "v2.82" ]]; then
+  wget -c $BLENDER_SITE/release/Blender2.82/blender-2.82-linux64.tar.xz
+  tar xf blender-2.82-linux64.tar.xz
+  ln -s blender-2.82-linux64/ blender
+  articleprefix="net.bitwrk/blender/0/2.82"
 else
   die "Unknown blender version $BLENDER_VERSION"
 fi
